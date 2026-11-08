@@ -1,0 +1,7 @@
+Scan Target: scanme.nmap.org
+Port Range: 1 - 100
+Date: 2026-11-08 22:42:17.051089
+--------------------------------------------------
+[+] Port 22 is OPEN  |  Service: SSH-2.0-OpenSSH_6.6.1p1 Ubuntu-2ubuntu2.13
+Protocol mismatch.
+[+] Port 80 is OPEN
