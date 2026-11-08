@@ -16,7 +16,7 @@ A professional, cloud-powered network reconnaissance web application built with 
 
 
 
-🔗 \*\*\[Live Demo](YOUR\_LIVE\_STREAMLIT\_LINK\_HERE)\*\* \*(Click here to try it out instantly!)\*
+ \*\*\[Live Demo](YOUR\_LIVE\_STREAMLIT\_LINK\_HERE)\*\* \*(Click here to try it out instantly!)\*
 
 
 
@@ -47,90 +47,72 @@ A professional, cloud-powered network reconnaissance web application built with 
 
 
 \---
+# CyberPort Scanner
 
+A dual-mode network reconnaissance web application designed for port scanning and service fingerprinting. The tool abstracts the complexity of raw socket programming and API integration behind a unified Streamlit interface, allowing users to perform network analysis from a browser without local CLI dependencies.
 
+**Live Deployment:** [cyberport-scanner-l59tuvrgehpqetjupwzvtp.streamlit.app](https://cyberport-scanner-l59tuvrgehpqetjupwzvtp.streamlit.app/)
 
-\## 📖 About the Project
+---
 
-Traditional port scanners (like Nmap) require local installation and are often blocked by home/office ISP firewalls or cloud hosting providers. \*\*CyberPort Scanner\*\* solves this by providing a sleek, web-based interface that delegates the heavy lifting to the HackerTarget Nmap API. This allows users to perform legitimate network reconnaissance from any device, anywhere, while maintaining a professional, terminal-style user experience.
+## Overview
 
+Standard port scanners like Nmap require local installation and direct network access. When deploying scanning tools to cloud-hosted web applications, outbound raw TCP socket connections are frequently blocked by the hosting provider's egress firewalls to prevent abuse. 
 
+CyberPort Scanner solves this by implementing a dual-mode architecture. It defaults to a cloud-based API proxy for unrestricted scanning, but falls back to a highly optimized, multithreaded local socket scanner when specific port ranges are requested by the user.
 
-\---
+---
 
+## Architecture
 
+The application operates in two distinct modes based on user input parameters:
 
-\## ✨ Key Features
+### 1. Cloud API Mode (Default)
+When no custom port range is specified, the backend dispatches an HTTPS GET request to the HackerTarget Nmap API. This delegates the actual network probing to an external infrastructure, completely bypassing the egress restrictions of the Streamlit hosting environment. The raw text response is parsed server-side to extract open ports and service banners.
 
-\- \*\*☁️ Cloud-Powered Execution:\*\* Bypasses local firewall restrictions by utilizing the HackerTarget API for reliable, remote scanning.
+### 2. Local Socket Mode
+When a user specifies a custom port range (e.g., `1-100` or `80,443`), the application switches to Python's native `socket` library. To prevent the UI from freezing during sequential scans, it utilizes `concurrent.futures.ThreadPoolExecutor` with 50 worker threads. This allows for concurrent TCP connect scans, reducing the time required to scan 100 ports from ~100 seconds to ~2 seconds.
 
-\- \*\*⚡ Multithreaded Architecture:\*\* (In local mode) Capable of scanning multiple ports simultaneously for maximum efficiency.
+---
 
-\- \*\*💻 Authentic Terminal UI:\*\* Custom CSS styling provides a sleek, dark-mode, monospace interface that mimics a real Linux terminal.
+## Key Capabilities
 
-\- \*\*🔍 Service Fingerprinting:\*\* Automatically parses raw scan data to extract and display open ports alongside their identified services (e.g., `22/tcp open ssh`).
+- **Dual-Mode Execution:** Seamlessly transitions between API-based proxy scanning and raw multithreaded socket scanning.
+- **Service Fingerprinting:** Attempts to read initial banners from open TCP ports to identify running software versions.
+- **Concurrent Processing:** Local scans utilize a thread pool to execute parallel connection attempts.
+- **Terminal Emulation UI:** Custom CSS injection overrides default Streamlit styling to provide a monospace, dark-themed interface that mimics a standard Linux terminal.
 
-\- \*\*📱 Fully Responsive:\*\* Optimized for seamless use on desktop, tablet, and mobile devices.
+---
 
+## Usage
 
+The interface requires two inputs:
 
-\---
+1. **Target IP or Domain:** The destination host (e.g., `scanme.nmap.org`, `192.168.1.1`).
+2. **Custom Port Range (Optional):** 
+   - Leave blank to trigger Cloud API Mode (scans top 1000 ports).
+   - Enter a range (e.g., `1-1024`) or comma-separated list (e.g., `22,80,443`) to trigger Local Socket Mode.
 
+---
 
+## Local Development
 
-\## ⚙️ How It Works
+### Prerequisites
+- Python 3.10 or higher
+- pip package manager
 
-1\. The user inputs a target domain or IP address via the Streamlit web interface.
+### Setup and Execution
 
-2\. The application constructs a secure HTTPS GET request to the HackerTarget API.
+```bash
+git clone https://github.com/arnendubiswas5-rgb/cyberport-scanner.git
+cd cyberport-scanner
 
-3\. The API performs the Nmap scan on its end and returns raw text data.
+# Create and activate a virtual environment (recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-4\. The Python backend parses this data, filtering for "open" states and formatting it into a clean, readable terminal-style output.
+# Install dependencies
+pip install -r requirements.txt
 
-5\. The results are instantly rendered on the frontend for the user.
-
-
-
-\---
-
-
-
-\## 🛠️ Tech Stack
-
-\- \*\*Language:\*\* Python 3.12
-
-\- \*\*Web Framework:\*\* Streamlit
-
-\- \*\*Networking:\*\* `requests` library for API communication, `socket` (for local fallback)
-
-\- \*\*Styling:\*\* Custom CSS (injected via `st.markdown`)
-
-\- \*\*Version Control:\*\* Git \& GitHub
-
-
-
-\---
-
-
-
-\## 🚀 Getting Started
-
-
-
-Want to run this tool locally on your own machine? Follow these steps:
-
-
-
-\### Prerequisites
-
-\- Python 3.8 or higher installed on your system.
-
-\- Git installed for cloning the repository.
-
-
-
-\### Installation
-
-1\. \*\*Clone the repository:\*\*
-
+# Launch the application
+python -m streamlit run app.py
